@@ -1,21 +1,20 @@
-"use client";
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import Navbar from './components/navbar';
-export default function Home() {
+export default function Dashboard() {
     const router = useRouter();
     useEffect(() => {
         axios.get("http://localhost:8000/api/user")
             .then((response) => { 
-                if (response.status === 200) {
-                    router.push('/dashboard');
+                if (response.status !== 200) {
+                    router.push('/');
                 }
-            }).catch((err) => { });
+            }).catch((err) => { 
+                router.push('/');
+            });
     }, []);
     return (
-      <main className="">
-        <Navbar />
-      </main>
+        <main className="">
+        </main>
     );
 }

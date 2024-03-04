@@ -1,9 +1,7 @@
-"use client";
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
-import Navbar from './components/navbar';
-export default function Home() {
+export default function Login() {
     const router = useRouter();
     useEffect(() => {
         axios.get("http://localhost:8000/api/user")
@@ -14,8 +12,7 @@ export default function Home() {
             }).catch((err) => { });
     }, []);
     return (
-      <main className="">
-        <Navbar />
-      </main>
+        <main className="">
+        </main>
     );
 }
