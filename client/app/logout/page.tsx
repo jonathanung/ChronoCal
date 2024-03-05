@@ -5,7 +5,7 @@ import axios from "axios";
 export default function Logout() {
     const router = useRouter();
     useEffect(() => {
-        axios.get("http://localhost:8000/api/logout")
+        axios.get(`${process.env.API_URL}/api/logout`)
             .then((response) => {
                 console.log(response);
                 if (response.status === 200) {

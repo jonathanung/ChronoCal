@@ -1,4 +1,4 @@
-```md
+
 # ChronoCal
 
 Planned Features:
@@ -21,4 +21,22 @@ Planned Features:
 
 
 - Speech to text AI creation?
-```
+
+
+
+Front End
+- Next.js
+- Tailwind CSS
+- v0.dev
+- Flowbite
+- Axios
+
+- Chart.js?
+- Dayjs?
+
+
+Back End
+- Express
+- MongoDB
+- jsonwebtoken
+

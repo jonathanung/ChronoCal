@@ -6,16 +6,16 @@ import Navbar from './components/navbar';
 export default function Home() {
     const router = useRouter();
     useEffect(() => {
-        axios.get("http://localhost:8000/api/user")
+        axios.get(`${process.env.API_URL}/api/user`)
             .then((response) => { 
                 if (response.status === 200) {
                     router.push('/dashboard');
                 }
             }).catch((err) => { });
     }, []);
-    return (
+  return (
       <main className="">
-        <Navbar />
+        <Navbar isLoggedIn={false} />
       </main>
     );
 }
