@@ -26,6 +26,8 @@ cd server
 npm start
 ```
 
+![Database ERD](./diagrams/ChronoCal.drawio.svg)
+
 
 Planned Features:
 
