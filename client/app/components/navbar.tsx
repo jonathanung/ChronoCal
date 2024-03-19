@@ -37,19 +37,19 @@ export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
                             </li>
                             <li>
                             <Link className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400" href="#">
-                              <ListIcon className="w-4 h-4" />
+                              <ListIcon/>
                               Todo List
                             </Link>
                           </li>
                           <li>
                             <Link className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400" href="#">
-                              <DollarSignIcon className="w-4 h-4" />
+                              <DollarSignIcon />
                               Expenses
                             </Link>
                           </li>
                           <li>
                             <Link className="flex items-center gap-1.5 text-gray-500 dark:text-gray-400" href="#">
-                              <AppleIcon className="w-4 h-4" />
+                              <AppleIcon />
                               AI Helper
                             </Link>
                           </li>
