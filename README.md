@@ -1,6 +1,32 @@
 
 # ChronoCal
 
+scripts:
+```zsh
+mkdir ChronoCal
+cd ChronoCal
+git init
+git remote add https://github.com/jonathanung/ChronoCal
+git pull
+cd client
+npm i
+cd ../server
+npm i
+cd ..
+```
+
+The Backend and Front End will be booted in separate terminals.
+```zsh
+cd client
+npm run dev
+```
+
+```zsh
+cd server
+npm start
+```
+
+
 Planned Features:
 
 - Calendar generator to create a unique two-dimensional array for the currently displayed month using dayjs
@@ -23,6 +49,9 @@ Planned Features:
 - Speech to text AI creation?
 
 
+- Expenses should have graphs to compare on a month - month and a week - week basis, with analytics.
+
+
 
 Front End
 - Next.js
@@ -39,4 +68,5 @@ Back End
 - Express
 - MongoDB
 - jsonwebtoken
+- draw.io (ERD)
 
