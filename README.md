@@ -26,6 +26,7 @@ cd server
 npm start
 ```
 
+This was the ERD designed to create the database (Note: There may have been changes since.)
 ![Database ERD](./diagrams/ChronoCal.drawio.svg)
 
 
