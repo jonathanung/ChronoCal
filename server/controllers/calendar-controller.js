@@ -9,7 +9,7 @@ class CalendarController {
         if (!req.cookies.usertoken) {
             throw new Error('Unauthorized');
         }
-        const userData = jwt.decode(req.cookies.usertoken, { complete: true });
+        const userData = jwt.verify(req.cookies.usertoken, key);
         const userID = userData.payload.id;
         return await User.findOne({ _id: userID }).sort({ createdAt: 1 });
     }

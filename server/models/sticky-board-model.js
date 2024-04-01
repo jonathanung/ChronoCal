@@ -1,6 +1,14 @@
 const mongoose = require('mongoose');
 const CSSColors = require('../enums/css-colors');
 
+const colorValidator = {
+    validator: function(value) {
+        const hexRegex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
+        return hexRegex.test(value) || Object.values(CSSColors).includes(value);
+    },
+    message: props => `${props.value} is not a supported color format!`
+};
+
 const StickyBoardSchema = new mongoose.Schema({
     owner_id: {
         type: mongoose.Schema.Types.ObjectId,
@@ -54,12 +62,5 @@ const StickyBoardSchema = new mongoose.Schema({
     }]
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
-const colorValidator = {
-    validator: function(value) {
-        const hexRegex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
-        return hexRegex.test(value) || Object.values(CSSColors).includes(value);
-    },
-    message: props => `${props.value} is not a supported color format!`
-};
 
 module.exports = mongoose.model('StickyBoard', StickyBoardSchema);

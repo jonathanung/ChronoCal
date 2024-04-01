@@ -149,4 +149,4 @@ const Color = {
     YellowGreen: 'YellowGreen',
 };
 
-export default Color;
+module.exports = Color;

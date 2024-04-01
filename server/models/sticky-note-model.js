@@ -1,6 +1,14 @@
 const mongoose = require('mongoose');
 const CSSColors = require('../bin/css-colors');
 
+const colorValidator = {
+    validator: function(value) {
+        const hexRegex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
+        return hexRegex.test(value) || Object.values(CSSColors).includes(value);
+    },
+    message: props => `${props.value} is not a supported color format!`
+};
+
 const StickyNoteSchema = new mongoose.Schema({
     sticky_board_id: {
         type: mongoose.Schema.Types.ObjectId,
@@ -45,14 +53,6 @@ const StickyNoteSchema = new mongoose.Schema({
         validate: colorValidator
     },
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
-
-const colorValidator = {
-    validator: function(value) {
-        const hexRegex = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i;
-        return hexRegex.test(value) || Object.values(CSSColors).includes(value);
-    },
-    message: props => `${props.value} is not a supported color format!`
-};
 
 
 module.exports = mongoose.model('StickyNote', StickyNoteSchema);

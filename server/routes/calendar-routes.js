@@ -1,11 +1,14 @@
+const express = require('express');
+const router = express.Router();
 const CalendarController = require('../controllers/calendar-controller');
+const UserController = require('../controllers/user-controller'); // If this is needed for getDeselectedCalendars
 const { authenticate } = require('../bin/jwt.config');
 
-module.exports = app => {
-    app.post('/api/calendar', authenticate, CalendarController.createCalendar);
-    app.get('/api/calendar', authenticate, CalendarController.getAllCalendars);
-    app.get('/api/calendar/:id', authenticate, CalendarController.getCalendarById);
-    app.put('/api/calendar/:id', authenticate, CalendarController.updateCalendar);
-    app.delete('/api/calendar/:id', authenticate, CalendarController.deleteCalendar);
-    app.get("/api/user/deselected-calendars", authenticate, UserController.getDeselectedCalendars);
-}
+router.post('/', authenticate, CalendarController.createCalendar);
+router.get('/', authenticate, CalendarController.getAllCalendars);
+router.get('/:id', authenticate, CalendarController.getCalendarById);
+router.put('/:id', authenticate, CalendarController.updateCalendar);
+router.delete('/:id', authenticate, CalendarController.deleteCalendar);
+router.get("/user/deselected-calendars", authenticate, UserController.getDeselectedCalendars);
+
+module.exports = router;

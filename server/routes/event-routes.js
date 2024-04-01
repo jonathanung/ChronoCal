@@ -1,9 +1,11 @@
+const express = require('express');
+const router = express.Router();
 const EventController = require('../controllers/event-controller');
 const { authenticate } = require('../bin/jwt.config');
 
-module.exports = app => {
-    app.post('/api/event', authenticate, EventController.createEvent);
-    app.get('/api/event/:id', authenticate, EventController.getEventById);
-    app.put('/api/event/:id', authenticate, EventController.updateEvent);
-    app.delete('/api/event/:id', authenticate, EventController.deleteEvent);
-}
+router.post('/', authenticate, EventController.createEvent);
+router.get('/:id', authenticate, EventController.getEventById);
+router.put('/:id', authenticate, EventController.updateEvent);
+router.delete('/:id', authenticate, EventController.deleteEvent);
+
+module.exports = router;

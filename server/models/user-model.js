@@ -12,18 +12,14 @@ const UserSchema = new mongoose.Schema({
         type: String,
         required: [true, "Email is required!"],
         validate: {
-            validator: val => /^([\w-]+@([\w-]+\.)+[\w-]+)?$/.test(val),
+            validator: val => /^([\w-\.]+@([\w-]+\.)+[\w-]+)?$/.test(val),
             message: "Please enter a valid email!"
         },
         lowercase: true
     },
     password: {
         type: String,
-        required: [true, "Password is required!"],
-        validate: {
-            validator: val => /^(?=.*[0-9])(?=.*[!@#$%^&*.])[a-zA-Z0-9!@#$%^&*.]{8,}$/.test(val),
-            message: "Passwords must be at least 8 characters long and have an uppercase letter, a lowercase letter, a number and a symbol!"
-        },
+        required: [true, "Password is required!"]
     },
     calendars: {
         type: Map,

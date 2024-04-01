@@ -24,25 +24,27 @@ export default function Login() {
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         try {
-            const salt = bcrypt.genSaltSync(Number(process.env.SALT_ROUNDS) || 10);
-            const hashedPassword = bcrypt.hashSync(user.password, salt);
-            const response = await fetch(`${process.env.API_URL}/api/login`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/login`, {
                 method: "post",
                 mode: "cors",
-                headers: {"Content-Type": "application/json"}, 
+                headers: { "Content-Type": "application/json" }, 
+                credentials: "include",
                 body: JSON.stringify({
                     "email": user.email,
-                    "passwordHash": hashedPassword
+                    "password": user.password
                 })
             }); 
             console.log(await response.json());
+            if (response.status === 200) {
+                router.push('/dashboard');
+            }
         } catch (error) {
             console.error('Invalid', error);
         }
     };
     const router = useRouter();
     useEffect(() => {
-        axios.get(`${process.env.APIURL}/api/user`)
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/current`,{withCredentials: true})
             .then((response) => { 
                 if (response.status === 200) {
                     router.push('/dashboard');

@@ -6,13 +6,12 @@ import bcrypt from 'bcryptjs';
 
 export default function Login() {
     interface RegistrationUser {
-        firstName: string;
-        lastName: string;
+        username: string;
         email: string;
         password: string;
         confirmPassword: string;
     }
-    const [user, setUser] = useState<RegistrationUser>({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' });
+    const [user, setUser] = useState<RegistrationUser>({ username: '', email: '', password: '', confirmPassword: '' });
     const [showPassword, setShowPassword] = useState<boolean>(false);
 
     const emailRegex = /^([\w-\.]+@([\w-]+\.)+[\w-]+)?$/;
@@ -43,17 +42,16 @@ export default function Login() {
         }
         e.preventDefault();
         try {
-            const salt = bcrypt.genSaltSync(Number(process.env.SALT_ROUNDS) || 10);
-            const hashedPassword = bcrypt.hashSync(user.password, salt);
-            const response = await fetch(`${process.env.API_URL}/api/register`, {
+            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/register`, {
                 method: "post",
                 mode: "cors",
-                headers: {"Content-Type": "application/json"}, 
+                headers: { "Content-Type": "application/json" }, 
+                credentials: "include",
                 body: JSON.stringify({
-                    "firstName": user.firstName,
-                    "lastName": user.lastName,
+                    "username": user.username,
                     "email": user.email,
-                    "passwordHash": hashedPassword
+                    "password": user.password,
+                    "confirmPassword": user.confirmPassword
                 })
             }); 
             console.log(await response.json());
@@ -63,7 +61,7 @@ export default function Login() {
     };
     const router = useRouter();
     useEffect(() => {
-        axios.get(`${process.env.APIURL}/api/user`)
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/current`, {withCredentials: true})
             .then((response) => { 
                 if (response.status === 200) {
                     router.push('/dashboard');
@@ -79,23 +77,12 @@ export default function Login() {
                 <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm text-black dark:text-white">
                     <form className="space-y-6 border p-4 rounded-md border-black dark:border-white" onSubmit={handleSubmit}>
                         <div>
-                            <label htmlFor="firstName">First Name:</label>
+                            <label htmlFor="username">Username:</label>
                             <input
                                 type="text"
-                                id="firstName"
-                                name="firstName"
-                                value={user.firstName}
-                                onChange={handleChange}
-                                className="mt-1 block w-full border p-2 rounded-md text-black"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="email">Last Name:</label>
-                            <input
-                                type="text"
-                                id="lastName"
-                                name="lastName"
-                                value={user.lastName}
+                                id="username"
+                                name="username"
+                                value={user.username}
                                 onChange={handleChange}
                                 className="mt-1 block w-full border p-2 rounded-md text-black"
                             />

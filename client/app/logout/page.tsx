@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
@@ -5,7 +6,7 @@ import axios from "axios";
 export default function Logout() {
     const router = useRouter();
     useEffect(() => {
-        axios.get(`${process.env.API_URL}/api/logout`)
+        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/logout`, { withCredentials: true })
             .then((response) => {
                 console.log(response);
                 if (response.status === 200) {
