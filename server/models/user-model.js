@@ -40,6 +40,10 @@ const UserSchema = new mongoose.Schema({
         of: mongoose.Schema.Types.ObjectId,
         ref: "Calendar"
     },
+    deselected_calendars: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Calendar"
+    }],
     events: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: "Event"

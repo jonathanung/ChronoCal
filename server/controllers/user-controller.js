@@ -91,6 +91,17 @@ class UserController {
             .then(users => res.json(users))
             .catch(error => res.json(error))
     }
+
+    getDeselectedCalendars = async (req, res) => {
+        try {
+            const user = await this.getUserFromToken(req);
+            const deselectedCalendars = user.deselected_calendars;
+            res.status(200).json(deselectedCalendars);
+        } catch (error) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+
 }
 
 module.exports = new UserController();
