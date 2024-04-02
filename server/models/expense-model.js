@@ -58,7 +58,12 @@ const ExpenseSchema = new mongoose.Schema({
     },
     tags: [{
         type: String
-    }]
+    }],
+    expense_type: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'ExpenseType',
+        required: [true, "Expense type is required!"]
+    },
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 module.exports = mongoose.model('Expense', ExpenseSchema);

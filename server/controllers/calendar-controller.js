@@ -18,6 +18,12 @@ class CalendarController {
     createCalendar = async (req, res) => {
         try {
             const user = await this.getUserFromToken(req);
+            const existingCalendar = await Calendar.findOne({ owner_id: user._id, name: req.body.name });
+
+            if (existingCalendar) {
+                return res.status(400).json({ message: "A calendar with this name already exists." });
+            }
+
             const calendar = await Calendar.create({ ...req.body, owner_id: user._id });
             res.status(201).json(calendar);
         } catch (error) {
@@ -97,10 +103,18 @@ class CalendarController {
     deleteCalendar = async (req, res) => {
         try {
             const user = await this.getUserFromToken(req);
-            const calendar = await Calendar.findOneAndDelete({ _id: req.params.id, owner_id: user._id });
+            const calendar = await Calendar.findOne({ _id: req.params.id, owner_id: user._id });
+
             if (!calendar) {
                 return res.status(404).json({ message: "Calendar not found" });
             }
+
+            if (calendar.name === "Personal") {
+                return res.status(400).json({ message: "Cannot delete the 'Personal' calendar" });
+            }
+
+            await calendar.remove();
+
             res.status(200).json({ message: "Calendar deleted successfully" });
         } catch (error) {
             res.status(400).json({ message: error.message });

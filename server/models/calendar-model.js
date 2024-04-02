@@ -40,7 +40,7 @@ const CalendarSchema = new mongoose.Schema({
     }],
     color: {
         type: String,
-        required: [true, "Board color is required!"],
+        required: [true, "Calendar color is required!"],
         validate: colorValidator
     },
     events: [{

@@ -62,6 +62,8 @@ Front End
 - v0.dev
 - Flowbite
 - Axios
+- @nivo/line
+- @nivo/calendar
 
 - Chart.js?
 - Dayjs?

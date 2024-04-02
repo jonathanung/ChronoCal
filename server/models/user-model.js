@@ -94,6 +94,10 @@ const UserSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "Issue"
     }],
+    expense_types: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "ExpenseType"
+    }],
 }, { timestamps: { createdAt: 'created_at', updatedAt: 'updated_at' } });
 
 //This function gets the confirmPassword variable from the API Post and sets it to a variable

@@ -3,33 +3,47 @@ const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt")
 const key = process.env.A_SECRET_KEY
 
-class UserController {
+const Calendar = require('../models/calendar-model');
+const ExpenseType = require('../models/expense-type-model');
 
+class UserController {
     //Register a new user
     register = async (req, res) => {
         if (req.body.email) {
-            req.body.email = req.body.email.toLowerCase()
+            req.body.email = req.body.email.toLowerCase();
         }
         //Checking for duplicate email
-        const dupe = await User.find({ email: req.body.email })
+        const dupe = await User.find({ email: req.body.email });
         if (dupe.length !== 0) {
-            return res.json({ errors: { email: { message: "Email is already in use!" } } })
+            return res.json({ errors: { email: { message: "Email is already in use!" } } });
         }
 
-        User.create(req.body)
-            .then(user => {
-                console.log(req.body)
-                console.log("User created successfully")
-                const userToken = jwt.sign({ id: user._id }, key);
-                res.cookie("usertoken", userToken, key, { httpOnly: true })
-                    .json({ user: user })
-            })
-            .catch(error => {
-                res.json(error);
-                console.log(error);
-                console.log(req.body)
-            })
+        try {
+            const user = await User.create(req.body);
+
+            // Create a new "Personal" calendar for the user
+            const personalCalendar = new Calendar({
+                owner_id: user._id,
+                name: "Personal",
+            });
+            await personalCalendar.save();
+
+            // Create a new "Personal" expense type for the user
+            const personalExpenseType = new ExpenseType({
+                owner_id: user._id,
+                name: "Personal",
+            });
+            await personalExpenseType.save();
+
+            const userToken = jwt.sign({ id: user._id }, key);
+            res.cookie("usertoken", userToken, key, { httpOnly: true })
+                .json({ user: user });
+        } catch (error) {
+            res.json(error);
+            console.log(error);
+        }
     }
+
 
     //Login the user
     login = async (req, res) => {
@@ -95,6 +109,49 @@ class UserController {
             res.status(400).json({ message: error.message });
         }
     }
+
+    // Change the user's password
+    changePassword = async (req, res) => {
+        try {
+            const user = await this.getUserFromToken(req);
+            const { oldPassword, newPassword } = req.body;
+
+            // Check if the old password is correct
+            const isMatch = await bcrypt.compare(oldPassword, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ message: "Old password is incorrect." });
+            }
+
+            // Hash the new password and update the user
+            const hashedPassword = await bcrypt.hash(newPassword, Number(process.env.SALT_ROUNDS));
+            user.password = hashedPassword;
+            await user.save();
+
+            res.status(200).json({ message: "Password changed successfully." });
+        } catch (error) {
+            console.error("Error in changePassword:", error);
+            res.status(500).json({ message: "Internal server error." });
+        }
+    }
+
+    // Delete a user
+    deleteUser = async (req, res) => {
+        try {
+            const user = await this.getUserFromToken(req);
+
+            // Delete the user
+            await User.findByIdAndDelete(user._id);
+
+            // Clear the cookie
+            res.clearCookie('usertoken');
+
+            res.status(200).json({ message: "User deleted successfully." });
+        } catch (error) {
+            console.error("Error in deleteUser:", error);
+            res.status(500).json({ message: "Internal server error." });
+        }
+    }
+
 
 }
 

@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const KanbanBoardSchema = new mongoose.Schema({
-    title: {
+    name: {
         type: String,
         required: [true, "Board title is required"],
         maxlength: [255, "Board title cannot exceed 255 characters"]
