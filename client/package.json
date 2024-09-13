@@ -11,12 +11,24 @@
   "dependencies": {
     "@nivo/calendar": "^0.85.1",
     "@nivo/line": "^0.85.1",
+    "@radix-ui/react-dialog": "^1.1.1",
+    "@radix-ui/react-popover": "^1.1.1",
+    "@radix-ui/react-slider": "^1.2.0",
+    "@radix-ui/react-slot": "^1.1.0",
     "axios": "^1.6.7",
     "bcryptjs": "^2.4.3",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
     "cors": "^2.8.5",
+    "date-fns": "^3.6.0",
+    "framer-motion": "^11.5.4",
+    "lucide-react": "^0.439.0",
     "next": "14.1.1",
     "react": "^18",
-    "react-dom": "^18"
+    "react-day-picker": "^8.10.1",
+    "react-dom": "^18",
+    "tailwind-merge": "^2.5.2",
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

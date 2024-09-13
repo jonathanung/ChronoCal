@@ -2,6 +2,7 @@ const User = require('../models/user-model');
 const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt")
 const key = process.env.A_SECRET_KEY
+const TimezoneEnum = require('timezone-enum');
 
 const Calendar = require('../models/calendar-model');
 const ExpenseType = require('../models/expense-type-model');
@@ -25,6 +26,8 @@ class UserController {
             const personalCalendar = new Calendar({
                 owner_id: user._id,
                 name: "Personal",
+                color: "#FFD700",
+                timezone: TimezoneEnum['US/Pacific'] //To become dynamically set through client detected timezone
             });
             await personalCalendar.save();
 
