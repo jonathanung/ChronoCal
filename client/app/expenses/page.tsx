@@ -35,7 +35,7 @@ const mockExpenses = [
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 const STROKE_COLORS = ['#005299', '#00835A', '#A67700', '#A6522B', '#5956A6']
 
-export default function ExpenseTracker() {
+export default function Expenses() {
   const [timeframe, setTimeframe] = useState('month')
   const [filteredExpenses, setFilteredExpenses] = useState(mockExpenses)
   const [pieData, setPieData] = useState([])
