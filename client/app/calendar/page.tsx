@@ -10,6 +10,7 @@ import axios from 'axios'
 import Navbar from '../components/navbar'
 
 const daysOfWeek = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+const shortDaysOfWeek = ['U', 'M', 'T', 'W', 'R', 'F', 'S']
 const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
 
 const mockEvents = [
@@ -29,15 +30,25 @@ const mockEvents = [
 
 export default function Calendar() {
   const [date, setDate] = useState(new Date(2024, 8, 1))
-  const [view, setView] = useState('month')
+  const [view, setView] = useState('week')
   const [daysToShow, setDaysToShow] = useState(3)
   const [scrollDirection, setScrollDirection] = useState(null)
   const contentRef = useRef(null)
+  const [isMobile, setIsMobile] = useState(false)
 
-  const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate()
-  const getFirstDayOfMonth = (year, month) => new Date(year, month, 1).getDay()
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 960)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
-  const getEventsForDate = (year, month, day) => {
+  const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate()
+  const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay()
+
+  const getEventsForDate = (year: number, month: number, day: number) => {
     return mockEvents.filter(event => 
       event.date.getFullYear() === year &&
       event.date.getMonth() === month &&
@@ -45,11 +56,11 @@ export default function Calendar() {
     )
   }
 
-  const formatEventTime = (date) => {
+  const formatEventTime = (date: Date) => {
     return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
   }
 
-  const formatEventEndTime = (date, duration) => {
+  const formatEventEndTime = (date: Date, duration: number) => {
     const endDate = new Date(date.getTime() + duration * 60000)
     return endDate.toLocaleTimeString('en-US', { hour: 'numeric', minute: 'numeric', hour12: true })
   }
@@ -62,7 +73,7 @@ export default function Calendar() {
     return slots
   }
 
-  const calculateEventPosition = (event, overlappingEvents) => {
+  const calculateEventPosition = (event: any, overlappingEvents: any[]) => {
     const startMinutes = event.date.getHours() * 60 + event.date.getMinutes()
     const top = (startMinutes / 1440) * 100 // 1440 minutes in a day
     const height = (event.duration / 1440) * 100
@@ -71,8 +82,8 @@ export default function Calendar() {
     return { top: `${top}%`, height: `${height}%`, width: `${width}%`, left: `${left}%` }
   }
 
-  const getOverlappingEvents = (events) => {
-    const sortedEvents = events.sort((a, b) => a.date - b.date)
+  const getOverlappingEvents = (events: any[]) => {
+    const sortedEvents = events.sort((a, b) => a.date.getTime() - b.date.getTime())
     const overlappingGroups = []
     let currentGroup = []
 
@@ -109,7 +120,7 @@ export default function Calendar() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="grid"
+        className="grid h-full"
         style={{ gridTemplateColumns: `auto repeat(${daysToShow}, 1fr)` }}
       >
         <div className="sticky left-0 top-0 z-20 bg-white">
@@ -129,7 +140,7 @@ export default function Calendar() {
           return (
             <div key={dayIndex} className="relative">
               <div className="sticky top-0 bg-white z-10 h-6 border-b border-gray-200 text-center font-semibold">
-                {daysOfWeek[currentDate.getDay()]} {currentDate.getDate()}
+                {isMobile ? shortDaysOfWeek[currentDate.getDay()] : daysOfWeek[currentDate.getDay()]} {currentDate.getDate()}
               </div>
               <div className="relative" style={{ height: '100%' }}>
                 {timeSlots.map((slot, index) => (
@@ -145,8 +156,10 @@ export default function Calendar() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <div className="font-semibold text-xs">{formatEventTime(event.date)} - {formatEventEndTime(event.date, event.duration)}</div>
-                      <div className="text-xs">{event.title}</div>
+                      <div className="font-semibold text-[10px]">
+                        {isMobile ? formatEventTime(event.date) : `${formatEventTime(event.date)} - ${formatEventEndTime(event.date, event.duration)}`}
+                      </div>
+                      <div className={`text-[10px] ${isMobile ? 'text-[8px]' : ''}`}>{event.title}</div>
                     </motion.div>
                   ))
                 ))}
@@ -170,7 +183,7 @@ export default function Calendar() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="grid grid-cols-[auto,repeat(7,1fr)] gap-1"
+        className="grid grid-cols-[auto,repeat(7,1fr)] h-full"
       >
         <div className="sticky left-0 top-0 z-20 bg-white">
           <div className="h-6"></div>
@@ -189,7 +202,7 @@ export default function Calendar() {
           return (
             <div key={dayIndex} className="relative">
               <div className="sticky top-0 bg-white z-10 h-6 border-b border-gray-200 text-center font-semibold">
-                {daysOfWeek[dayIndex]} {currentDate.getDate()}
+                {isMobile ? shortDaysOfWeek[dayIndex] : daysOfWeek[dayIndex]} {currentDate.getDate()}
               </div>
               <div className="relative" style={{ height: '100%' }}>
                 {timeSlots.map((slot, index) => (
@@ -205,8 +218,10 @@ export default function Calendar() {
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.3 }}
                     >
-                      <div className="font-semibold text-xs">{formatEventTime(event.date)} - {formatEventEndTime(event.date, event.duration)}</div>
-                      <div className="text-xs">{event.title}</div>
+                      <div className="font-semibold text-[10px]">
+                        {isMobile ? formatEventTime(event.date) : `${formatEventTime(event.date)} - ${formatEventEndTime(event.date, event.duration)}`}
+                      </div>
+                      <div className={`text-[10px] ${isMobile ? 'text-[8px]' : ''}`}>{event.title}</div>
                     </motion.div>
                   ))
                 ))}
@@ -232,10 +247,10 @@ export default function Calendar() {
     for (let i = 1; i <= daysInMonth; i++) {
       const events = getEventsForDate(year, month, i)
       days.push(
-        <div key={i} className="border p-2 overflow-y-auto rounded-lg" style={{ height: '100px' }}>
+        <div key={i} className="border p-2 overflow-y-auto rounded-lg h-full">
           <div className="font-semibold mb-1">{i}</div>
           {events.map(event => (
-            <div key={event.id} className={`${event.color} p-1 mb-1 rounded-lg text-xs`}>
+            <div key={event.id} className={`${event.color} p-1 mb-1 rounded-lg text-[10px]`}>
               <div className="font-semibold">{formatEventTime(event.date)}</div>
               <div>{event.title}</div>
             </div>
@@ -251,7 +266,7 @@ export default function Calendar() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="grid grid-cols-7 gap-1"
+        className="grid grid-cols-7 gap-1 h-full"
       >
         {days}
       </motion.div>
@@ -266,7 +281,7 @@ export default function Calendar() {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         transition={{ duration: 0.3 }}
-        className="grid grid-cols-3 md:grid-cols-4 gap-4"
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 h-full"
       >
         {months.map((month, index) => (
           <motion.div
@@ -293,7 +308,7 @@ export default function Calendar() {
     )
   }
 
-  const changeDate = (direction) => {
+  const changeDate = (direction: 'prev' | 'next') => {
     setScrollDirection(direction)
     const newDate = new Date(date)
     if (view === 'day') newDate.setDate(date.getDate() + (direction === 'next' ? daysToShow : -daysToShow))
@@ -318,12 +333,12 @@ export default function Calendar() {
   }, [])
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col h-screen">
       <Navbar isLoggedIn={true} />
-      <main className="flex-grow bg-white">
-        <div className="sticky top-0 bg-white z-20">
-          <div className="flex justify-between items-center p-4 border-b">
-            <div className="flex space-x-2">
+      <main className="flex-grow bg-white flex flex-col">
+        <div className="bg-white z-20 border-b">
+          <div className="flex flex-col sm:flex-row justify-between items-center p-4">
+            <div className="flex space-x-2 mb-2 sm:mb-0">
               {['day', 'week', 'month', 'year'].map((v) => (
                 <Button
                   key={v}
@@ -340,7 +355,7 @@ export default function Calendar() {
               <Button variant="outline" size="icon" onClick={() => changeDate('prev')} aria-label="Previous">
                 <ChevronLeft className="h-4 w-4" />
               </Button>
-              <h2 className="text-2xl font-semibold">
+              <h2 className="text-xl sm:text-2xl font-semibold">
                 {view === 'year' ? date.getFullYear() : date.toLocaleString('default', { month: 'long', year: 'numeric' })}
               </h2>
               <Button variant="outline" size="icon" onClick={() => changeDate('next')} aria-label="Next">
@@ -362,9 +377,9 @@ export default function Calendar() {
             </div>
           )}
         </div>
-        <div ref={contentRef} className="overflow-auto" style={{ height: 'calc(100vh - 200px)' }}>
+        <div ref={contentRef} className="flex-grow">
           <AnimatePresence mode="wait">
-            <div className="p-4">
+            <div className="h-full p-4">
               {view === 'day' && renderDayView()}
               {view === 'week' && renderWeekView()}
               {view === 'month' && renderMonthView()}

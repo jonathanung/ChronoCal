@@ -1,9 +1,6 @@
 'use client'
 
-import React, { useState, useEffect } from 'react'
-import Navbar from '../components/navbar';
-import { useRouter } from 'next/navigation';
-import axios from 'axios';
+import { useState, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { PieChart, Pie, Cell, ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, Legend } from 'recharts'
@@ -35,7 +32,7 @@ const mockExpenses = [
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 const STROKE_COLORS = ['#005299', '#00835A', '#A67700', '#A6522B', '#5956A6']
 
-export default function ExpenseTracker() {
+export function ExpenseTrackerComponent() {
   const [timeframe, setTimeframe] = useState('month')
   const [filteredExpenses, setFilteredExpenses] = useState(mockExpenses)
   const [pieData, setPieData] = useState([])
@@ -45,17 +42,6 @@ export default function ExpenseTracker() {
     unitLabel: 'day',
     categoryStats: {}
   })
-    const router = useRouter();
-    useEffect(() => {
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/current`, { withCredentials: true })
-            .then((response) => { 
-                if (response.status !== 200) {
-                    router.push('/');
-                }
-            }).catch((err) => { 
-                router.push('/');
-            });
-    }, []);
 
   useEffect(() => {
     // Filter expenses based on timeframe
@@ -147,95 +133,92 @@ export default function ExpenseTracker() {
 
   }, [timeframe])
 
-    return (
-    <main className="">
-        <Navbar isLoggedIn={true} />
-        <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-4">Expense Tracker</h1>
-            <Select onValueChange={setTimeframe} defaultValue={timeframe}>
-                <SelectTrigger className="w-[180px] mb-4">
-                <SelectValue placeholder="Select timeframe" />
-                </SelectTrigger>
-                <SelectContent>
-                <SelectItem value="day">Day</SelectItem>
-                <SelectItem value="week">Week</SelectItem>
-                <SelectItem value="month">Month</SelectItem>
-                <SelectItem value="year">Year</SelectItem>
-                </SelectContent>
-            </Select>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Card>
-                <CardHeader>
-                    <CardTitle>Expense Distribution</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                    <PieChart>
-                        <Pie
-                        data={pieData}
-                        cx="50%"
-                        cy="50%"
-                        labelLine={false}
-                        outerRadius={80}
-                        fill="#8884d8"
-                        dataKey="value"
-                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                        strokeWidth={2}
-                        >
-                        {pieData.map((entry, index) => (
-                            <Cell 
-                            key={`cell-${index}`} 
-                            fill={COLORS[index % COLORS.length]} 
-                            stroke={STROKE_COLORS[index % STROKE_COLORS.length]}
-                            />
-                        ))}
-                        </Pie>
-                    </PieChart>
-                    </ResponsiveContainer>
-                </CardContent>
-                </Card>
-                <Card>
-                <CardHeader>
-                    <CardTitle>Expense Statistics</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <div className="space-y-4">
-                    <div>
-                        <h3 className="text-lg font-semibold">Average Spending per {statistics.unitLabel}</h3>
-                        <p className="text-2xl font-bold">${statistics.avgSpendingPerUnit.toFixed(2)}</p>
-                    </div>
-                    <div>
-                        <h3 className="text-lg font-semibold">Category Breakdown</h3>
-                        {Object.entries(statistics.categoryStats).map(([category, stats]) => (
-                        <div key={category} className="mt-2">
-                            <h4 className="font-medium">{category}</h4>
-                            <p>Avg. per {statistics.unitLabel}: ${stats.avgPerUnit.toFixed(2)}</p>
-                            <p>Comparison: {stats.comparison > 0 ? '+' : ''}{stats.comparison.toFixed(2)}%</p>
-                        </div>
-                        ))}
-                    </div>
-                    </div>
-                </CardContent>
-                </Card>
+  return (
+    <div className="container mx-auto p-4">
+      <h1 className="text-3xl font-bold mb-4">Expense Tracker</h1>
+      <Select onValueChange={setTimeframe} defaultValue={timeframe}>
+        <SelectTrigger className="w-[180px] mb-4">
+          <SelectValue placeholder="Select timeframe" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="day">Day</SelectItem>
+          <SelectItem value="week">Week</SelectItem>
+          <SelectItem value="month">Month</SelectItem>
+          <SelectItem value="year">Year</SelectItem>
+        </SelectContent>
+      </Select>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <Card>
+          <CardHeader>
+            <CardTitle>Expense Distribution</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  strokeWidth={2}
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell 
+                      key={`cell-${index}`} 
+                      fill={COLORS[index % COLORS.length]} 
+                      stroke={STROKE_COLORS[index % STROKE_COLORS.length]}
+                    />
+                  ))}
+                </Pie>
+              </PieChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Expense Statistics</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div>
+                <h3 className="text-lg font-semibold">Average Spending per {statistics.unitLabel}</h3>
+                <p className="text-2xl font-bold">${statistics.avgSpendingPerUnit.toFixed(2)}</p>
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold">Category Breakdown</h3>
+                {Object.entries(statistics.categoryStats).map(([category, stats]) => (
+                  <div key={category} className="mt-2">
+                    <h4 className="font-medium">{category}</h4>
+                    <p>Avg. per {statistics.unitLabel}: ${stats.avgPerUnit.toFixed(2)}</p>
+                    <p>Comparison: {stats.comparison > 0 ? '+' : ''}{stats.comparison.toFixed(2)}%</p>
+                  </div>
+                ))}
+              </div>
             </div>
-            <Card className="mt-4">
-                <CardHeader>
-                <CardTitle>Expenses Over Time</CardTitle>
-                </CardHeader>
-                <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                    <ComposedChart data={histogramData}>
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Bar dataKey="total" fill="#8884d8" />
-                    <Line type="monotone" dataKey="total" stroke="#ff7300" />
-                    </ComposedChart>
-                </ResponsiveContainer>
-                </CardContent>
-            </Card>
-        </div>
-    </main>
+          </CardContent>
+        </Card>
+      </div>
+      <Card className="mt-4">
+        <CardHeader>
+          <CardTitle>Expenses Over Time</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <ResponsiveContainer width="100%" height={300}>
+            <ComposedChart data={histogramData}>
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="total" fill="#8884d8" />
+              <Line type="monotone" dataKey="total" stroke="#ff7300" />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </div>
   )
 }

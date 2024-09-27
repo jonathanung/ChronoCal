@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios';
 import Navbar from './components/navbar';
@@ -11,6 +11,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function Home() {
     const router = useRouter();
+    const [currentTime, setCurrentTime] = useState(new Date());
+    const featuresRef = useRef<HTMLElement>(null);
+
     useEffect(() => {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/current`, {withCredentials: true})
             .then((response) => { 
@@ -18,7 +21,29 @@ export default function Home() {
                     router.push('/dashboard');
                 }
             }).catch((err) => { });
+
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+
+        return () => clearInterval(timer);
     }, []);
+
+    const getRotation = (value: number, max: number) => {
+        return (value / max) * 360;
+    };
+
+    const formatTime = (date: Date) => {
+        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    };
+
+    const scrollToFeatures = () => {
+        featuresRef.current?.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+        });
+    };
+
   return (
       <main className="min-h-screen bg-gradient-to-br from-indigo-100 via-purple-50 to-pink-100">
         <Navbar isLoggedIn={false} />
@@ -26,21 +51,55 @@ export default function Home() {
         <main className="flex-1">
             <section className="w-full py-12 md:py-24 lg:py-32 xl:py-48">
             <div className="container px-4 md:px-6 mx-auto">
-                <div className="flex flex-col items-center space-y-4 text-center">
-                <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
-                    Chronocal
+                <div className="flex flex-col items-center space-y-10 text-center">
+                <h1 className="text-4xl font-bold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl/none bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradient">
+                    ChronoCal
                 </h1>
-                <p className="mx-auto max-w-[700px] text-gray-600 md:text-xl dark:text-gray-300">
-                    A way to chronologize your life
+                <div className="relative w-64 h-64 mb-8">
+                    <div className="absolute inset-0 rounded-full border-4 border-indigo-500"></div>
+                    {/* <div className="absolute inset-2 rounded-full border-2 border-purple-500"></div> */}
+                    <div className="absolute inset-4 flex items-center justify-center rounded-full bg-white/30 backdrop-blur-sm">
+                        <div className="relative w-48 h-48">
+                            {/* Clock face */}
+                            <div className="absolute inset-0 rounded-full border-2 border-pink-500"></div>
+                            {/* Hour hand */}
+                            <div 
+                                className="absolute top-1/2 left-1/2 w-1 h-16 bg-pink-500 origin-bottom transform -translate-x-1/2"
+                                style={{
+                                    transform: `translate(-50%, -100%) rotate(${getRotation(currentTime.getHours() % 12, 12)}deg)`
+                                }}
+                            ></div>
+                            {/* Minute hand */}
+                            <div 
+                                className="absolute top-1/2 left-1/2 w-0.5 h-20 bg-purple-500 origin-bottom transform -translate-x-1/2"
+                                style={{
+                                    transform: `translate(-50%, -100%) rotate(${getRotation(currentTime.getMinutes(), 60)}deg)`
+                                }}
+                            ></div>
+                            {/* Second hand */}
+                            <div 
+                                className="absolute top-1/2 left-1/2 w-px h-24 bg-indigo-500 origin-bottom transform -translate-x-1/2"
+                                style={{
+                                    transform: `translate(-50%, -100%) rotate(${getRotation(currentTime.getSeconds(), 60)}deg)`
+                                }}
+                            ></div>
+                            {/* Center dot */}
+                            <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-pink-500 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
+                        </div>
+                    </div>
+                </div>
+                <p className="text-lg font-semibold text-gray-600">It is currently {formatTime(currentTime)}</p>
+                <p className="mx-auto max-w-[700px] text-gray-600 md:text-xl dark:text-gray-300 mb-8">
+                        Let Chronocal help you chronologize your life.
                 </p>
                 <div className="space-x-4">
-                    <Button className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white">Get Started</Button>
-                    <Button variant="outline" className="border-indigo-500 text-indigo-500 hover:bg-indigo-50">Learn More</Button>
+                    <Button className="bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600 text-white" onClick={() => router.push('/register')}>Get Started</Button>
+                    <Button variant="outline" className="border-indigo-500 text-indigo-500 hover:bg-indigo-50" onClick={scrollToFeatures}>Learn More</Button>
                 </div>
                 </div>
             </div>
             </section>
-            <section className="w-full py-12 md:py-24 lg:py-32 bg-white/50 backdrop-blur-sm">
+            <section ref={featuresRef} className="w-full py-12 md:py-24 lg:py-32 bg-white/50 backdrop-blur-sm">
             <div className="container px-4 md:px-6 mx-auto">
                 <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-500">
                 Features
@@ -96,7 +155,7 @@ export default function Home() {
             </section>
             <section className="w-full py-12 md:py-24 lg:py-32">
             <div className="container px-4 md:px-6 mx-auto">
-                <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-center mb-12 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-500">
+                <h2 className="pb-5 text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl text-center mb-8 bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 to-purple-500">
                 More Amazing Features
                 </h2>
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 items-start max-w-5xl mx-auto">

@@ -7,18 +7,19 @@ import {
 } from "../functions/icons";
 
 export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
-    const pathname = usePathname();  // Get the current path
-
-    // Function to determine if a link is active
+    const pathname = usePathname();
     const isActive = (route: string) => pathname === route;
     const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const mobileMenuRef = useRef<HTMLDivElement>(null);
+    const [isDesktop, setIsDesktop] = useState(false);
 
-    // Function to prevent default click action if the link is active
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, route: string) => {
         if (isActive(route)) {
-            e.preventDefault();  // Disable navigation if the link is active
+            e.preventDefault();
         }
+        setMobileMenuOpen(false);
     };
 
     useEffect(() => {
@@ -26,98 +27,82 @@ export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
                 setDropdownOpen(false);
             }
+            if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target as Node)) {
+                setMobileMenuOpen(false);
+            }
+        }
+
+        function handleResize() {
+            setIsDesktop(window.innerWidth > 960);
         }
 
         document.addEventListener("mousedown", handleClickOutside);
+        window.addEventListener("resize", handleResize);
+        handleResize();
+
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
+            window.removeEventListener("resize", handleResize);
         };
     }, []);
 
+    const NavLinks = () => (
+        <ul className="flex flex-col lg:flex-row gap-4 text-sm font-medium">
+            {[
+                { href: "/dashboard", icon: <HomeIcon />, text: "Home" },
+                { href: "/calendar", icon: <CalendarIcon />, text: "Calendar" },
+                { href: "#", icon: <CalendarRangeIcon />, text: "Events" },
+                { href: "#", icon: <SettingsIcon />, text: "Settings" },
+                { href: "#", icon: <ListIcon />, text: "Todo List" },
+                { href: "/expenses", icon: <DollarSignIcon />, text: "Expenses" },
+                { href: "#", icon: <AppleIcon />, text: "AI Helper" },
+            ].map((link) => (
+                <li key={link.href}>
+                    <Link 
+                        className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all border border-transparent ${isActive(link.href) ? "text-primary border-primary" : "text-gray-500 dark:text-gray-400"} hover:border-gray-300 dark:hover:border-gray-600`} 
+                        href={link.href}
+                        onClick={(e) => handleClick(e, link.href)}
+                    >
+                        {link.icon}
+                        {link.text}
+                    </Link>
+                </li>
+            ))}
+        </ul>
+    );
+
     return (
-        <div className="flex w-full h-full flex-col">
-            <header className="flex h-14 w-full items-center border-b px-4 md:px-6">
+        <div className="flex w-full flex-col">
+            <header className="flex h-14 w-full items-center justify-between border-b px-4 lg:px-6">
                 <Link className="flex items-center gap-2 text-lg font-semibold" href="#">
-                    Chronocal
+                    <span className="bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 animate-gradient font-bold">
+                        ChronoCal
+                    </span>
                 </Link>
-                {isLoggedIn ? (
-                    <nav className="flex-1 ml-10">
-                        <ul className="flex gap-4 text-sm font-medium">
-                            <li>
-                                <Link 
-                                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all border border-transparent ${isActive("/dashboard") ? "text-primary border-primary" : "text-gray-500 dark:text-gray-400"} hover:border-gray-300 dark:hover:border-gray-600`} 
-                                    href="/dashboard"
-                                    onClick={(e) => handleClick(e, "/dashboard")}
-                                >
-                                    <HomeIcon />
-                                    Home
-                                </Link>
-                            </li>
-                            <li>
-                                <Link 
-                                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all border border-transparent ${isActive("/calendar") ? "text-primary border-primary" : "text-gray-500 dark:text-gray-400"} hover:border-gray-300 dark:hover:border-gray-600`} 
-                                    href="/calendar"
-                                    onClick={(e) => handleClick(e, "/calendar")}
-                                >
-                                    <CalendarIcon />
-                                    Calendar
-                                </Link>
-                            </li>
-                            <li>
-                                <Link 
-                                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all border border-transparent ${isActive("/events") ? "text-primary border-primary" : "text-gray-500 dark:text-gray-400"} hover:border-gray-300 dark:hover:border-gray-600`} 
-                                    href="#"
-                                    onClick={(e) => handleClick(e, "/events")}
-                                >
-                                    <CalendarRangeIcon />
-                                    Events
-                                </Link>
-                            </li>
-                            <li>
-                                <Link 
-                                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all border border-transparent ${isActive("/settings") ? "text-primary border-primary" : "text-gray-500 dark:text-gray-400"} hover:border-gray-300 dark:hover:border-gray-600`} 
-                                    href="#"
-                                    onClick={(e) => handleClick(e, "/settings")}
-                                >
-                                    <SettingsIcon />
-                                    Settings
-                                </Link>
-                            </li>
-                            <li>
-                                <Link 
-                                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all border border-transparent ${isActive("/todo") ? "text-primary border-primary" : "text-gray-500 dark:text-gray-400"} hover:border-gray-300 dark:hover:border-gray-600`} 
-                                    href="#"
-                                    onClick={(e) => handleClick(e, "/todo")}
-                                >
-                                    <ListIcon />
-                                    Todo List
-                                </Link>
-                            </li>
-                            <li>
-                                <Link 
-                                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all border border-transparent ${isActive("/expenses") ? "text-primary border-primary" : "text-gray-500 dark:text-gray-400"} hover:border-gray-300 dark:hover:border-gray-600`} 
-                                    href="/expenses"
-                                    onClick={(e) => handleClick(e, "/expenses")}
-                                >
-                                    <DollarSignIcon />
-                                    Expenses
-                                </Link>
-                            </li>
-                            <li>
-                                <Link 
-                                    className={`flex items-center gap-1.5 px-2 py-1.5 rounded-lg transition-all border border-transparent ${isActive("/ai-helper") ? "text-primary border-primary" : "text-gray-500 dark:text-gray-400"} hover:border-gray-300 dark:hover:border-gray-600`} 
-                                    href="#"
-                                    onClick={(e) => handleClick(e, "/ai-helper")}
-                                >
-                                    <AppleIcon />
-                                    AI Helper
-                                </Link>
-                            </li>
-                        </ul>
-                    </nav>
-                ) : (<nav className="flex-1 ml-10"></nav>)}
-                {isLoggedIn ? (
-                    <div className="flex items-center gap-4 md:ml-4 relative" ref={dropdownRef}>
+                {!isLoggedIn && (
+                    <div className="flex items-center">
+                        <Link className="text-sm font-medium text-gray-500 dark:text-gray-400" href="/login">
+                            Log in
+                        </Link>
+                    </div>
+                )}
+                {isLoggedIn && (
+                    <>
+                        <nav className={isDesktop ? "flex flex-1 ml-10" : "hidden"}>
+                            <NavLinks />
+                        </nav>
+                        {!isDesktop && (
+                            <button 
+                                className="ml-auto mr-2"
+                                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                            >
+                                Menu
+                            </button>
+                        )}
+                    </>
+                )}
+                {isLoggedIn && (
+                    <div className="flex items-center gap-4 lg:ml-4 relative" ref={dropdownRef}>
                         <button 
                             className="rounded-full w-8 h-8"
                             onClick={() => setDropdownOpen(!dropdownOpen)}
@@ -136,7 +121,7 @@ export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
                             <span className="sr-only">Toggle user menu</span>
                         </button>
                         {dropdownOpen && (
-                            <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md overflow-hidden shadow-xl z-10">
+                            <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md overflow-hidden shadow-xl z-50">
                                 <Link 
                                     href="/settings"
                                     className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
@@ -154,14 +139,26 @@ export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
                             </div>
                         )}
                     </div>
-                ) : (
-                    <div className="flex items-center gap-4 md:ml-4">
-                        <Link className="text-sm font-medium text-gray-500 dark:text-gray-400" href="/login">
-                            Log in
-                        </Link>
-                    </div>
                 )}
             </header>
+            {isLoggedIn && mobileMenuOpen && !isDesktop && (
+                <div ref={mobileMenuRef}>
+                    <nav className="px-4 py-2 bg-white border-b">
+                        <NavLinks />
+                    </nav>
+                </div>
+            )}
+            <style jsx global>{`
+                @keyframes gradient {
+                    0% {background-position: 0% 50%;}
+                    50% {background-position: 100% 50%;}
+                    100% {background-position: 0% 50%;}
+                }
+                .animate-gradient {
+                    background-size: 200% 200%;
+                    animation: gradient 5s ease infinite;
+                }
+            `}</style>
         </div>
     );
 }
