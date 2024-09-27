@@ -27,7 +27,8 @@ class UserController {
                 owner_id: user._id,
                 name: "Personal",
                 color: "#FFD700",
-                timezone: TimezoneEnum['US/Pacific'] //To become dynamically set through client detected timezone
+                timezone: TimezoneEnum['US/Pacific'], // Ensure this is a valid timezone from TimezoneEnum
+                description: "Personal calendar"
             });
             await personalCalendar.save();
 
@@ -42,7 +43,7 @@ class UserController {
             res.cookie("usertoken", userToken, key, { httpOnly: true })
                 .json({ user: user });
         } catch (error) {
-            res.json(error);
+            res.status(400).json({ errors: error.errors, message: error.message });
             console.log(error);
         }
     }

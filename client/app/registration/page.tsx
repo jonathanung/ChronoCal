@@ -6,13 +6,15 @@ import bcrypt from 'bcryptjs';
 
 export default function Login() {
     interface RegistrationUser {
-        username: string;
+        firstName: string;
+        lastName: string;
         email: string;
         password: string;
         confirmPassword: string;
     }
-    const [user, setUser] = useState<RegistrationUser>({ username: '', email: '', password: '', confirmPassword: '' });
+    const [user, setUser] = useState<RegistrationUser>({ firstName: '', lastName: '', email: '', password: '', confirmPassword: '' });
     const [showPassword, setShowPassword] = useState<boolean>(false);
+    const [errors, setErrors] = useState<{[key: string]: string}>({});
 
     const emailRegex = /^([\w-\.]+@([\w-]+\.)+[\w-]+)?$/;
     const passRegex = /^(?=.*[0-9])(?=.*[!@#$%^&*.])[a-zA-Z0-9!@#$%^&*.]{8,}$/;
@@ -28,35 +30,45 @@ export default function Login() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        let newErrors: {[key: string]: string} = {};
+
         if (user.password !== user.confirmPassword) {
-            console.error('Passwords do not match!');
-            return;
+            newErrors.confirmPassword = 'Passwords do not match!';
         }
         if (!emailRegex.test(user.email)) {
-            console.error('Invalid email!');
-            return;
+            newErrors.email = 'Invalid email!';
         }
         if (!passRegex.test(user.password)) {
-            console.error('Invalid password!');
-            return;
+            newErrors.password = 'Password must contain at least 8 characters, including numbers and special characters.';
         }
-        e.preventDefault();
-        try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/register`, {
-                method: "post",
-                mode: "cors",
-                headers: { "Content-Type": "application/json" }, 
-                credentials: "include",
-                body: JSON.stringify({
-                    "username": user.username,
-                    "email": user.email,
-                    "password": user.password,
-                    "confirmPassword": user.confirmPassword
-                })
-            }); 
-            console.log(await response.json());
-        } catch (error) {
-            console.error('Invalid', error);
+        if (user.firstName.trim() === '') {
+            newErrors.firstName = 'First name is required!';
+        }
+        if (user.lastName.trim() === '') {
+            newErrors.lastName = 'Last name is required!';
+        }
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length === 0) {
+            try {
+                const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/register`, {
+                    method: "post",
+                    mode: "cors",
+                    headers: { "Content-Type": "application/json" }, 
+                    credentials: "include",
+                    body: JSON.stringify({
+                        "firstName": user.firstName,
+                        "lastName": user.lastName,
+                        "email": user.email,
+                        "password": user.password,
+                        "confirmPassword": user.confirmPassword
+                    })
+                }); 
+                console.log(await response.json());
+            } catch (error) {
+                console.error('Invalid', error);
+            }
         }
     };
     const router = useRouter();
@@ -70,75 +82,108 @@ export default function Login() {
     }, []); 
 
     return (
-        <main className="">
+        <main className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800 dark:to-gray-900">
             <div className="flex min-h-screen flex-col justify-center items-center px-6 py-12 lg:px-8">
-                <h4>Login to Chronocal</h4>
+                <h1 className="text-4xl font-bold mb-8 text-blue-600 dark:text-blue-400">Register for Chronocal</h1>
 
-                <div className="mt-10 sm:mx-auto sm:w-full sm:max-w-sm text-black dark:text-white">
-                    <form className="space-y-6 border p-4 rounded-md border-black dark:border-white" onSubmit={handleSubmit}>
-                        <div>
-                            <label htmlFor="username">Username:</label>
+                <div className="w-full max-w-md">
+                    <form className="bg-white dark:bg-gray-800 shadow-md rounded-lg px-8 pt-6 pb-8 mb-4" onSubmit={handleSubmit}>
+                        <div className="mb-4">
+                            <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="firstName">
+                                First Name
+                            </label>
                             <input
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 type="text"
-                                id="username"
-                                name="username"
-                                value={user.username}
+                                id="firstName"
+                                name="firstName"
+                                value={user.firstName}
                                 onChange={handleChange}
-                                className="mt-1 block w-full border p-2 rounded-md text-black"
+                                placeholder="Enter your first name"
                             />
+                            {errors.firstName && <p className="text-red-500 text-xs italic">{errors.firstName}</p>}
                         </div>
-                        <div>
-                            <label htmlFor="email">Email:</label>
+                        <div className="mb-4">
+                            <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="lastName">
+                                Last Name
+                            </label>
                             <input
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                                type="text"
+                                id="lastName"
+                                name="lastName"
+                                value={user.lastName}
+                                onChange={handleChange}
+                                placeholder="Enter your last name"
+                            />
+                            {errors.lastName && <p className="text-red-500 text-xs italic">{errors.lastName}</p>}
+                        </div>
+                        <div className="mb-4">
+                            <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="email">
+                                Email
+                            </label>
+                            <input
+                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
                                 type="email"
                                 id="email"
                                 name="email"
                                 value={user.email}
                                 onChange={handleChange}
-                                className="mt-1 block w-full border p-2 rounded-md text-black"
+                                placeholder="Enter your email"
                             />
+                            {errors.email && <p className="text-red-500 text-xs italic">{errors.email}</p>}
                         </div>
-                        <div>
-                            <label htmlFor="password">Password:</label>
-                            <div className="flex items-center">
+                        <div className="mb-4">
+                            <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="password">
+                                Password
+                            </label>
+                            <div className="relative">
                                 <input
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
                                     type={showPassword ? 'text' : 'password'}
                                     id="password"
                                     name="password"
                                     value={user.password}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border p-2 rounded-md text-black"
+                                    placeholder="Enter your password"
                                 />
                             </div>
+                            {errors.password && <p className="text-red-500 text-xs italic">{errors.password}</p>}
                         </div>
-                            <div>
-                            <label htmlFor="confirmPassword">Confirm Password:</label>
-                            <div className="flex items-center">
+                        <div className="mb-6">
+                            <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="confirmPassword">
+                                Confirm Password
+                            </label>
+                            <div className="relative">
                                 <input
+                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
                                     type={showPassword ? 'text' : 'password'}
                                     id="confirmPassword"
                                     name="confirmPassword"
                                     value={user.confirmPassword}
                                     onChange={handleChange}
-                                    className="mt-1 block w-full border p-2 rounded-md text-black"
+                                    placeholder="Confirm your password"
                                 />
+                                <button
+                                    type="button"
+                                    onClick={togglePasswordVisibility}
+                                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-sm leading-5"
+                                >
+                                    {showPassword ? 'Hide' : 'Show'}
+                                </button>
                             </div>
+                            {errors.confirmPassword && <p className="text-red-500 text-xs italic">{errors.confirmPassword}</p>}
                         </div>
-                        <div className="flex justify-end">
-                            <button
-                                type="button"
-                                onClick={togglePasswordVisibility}
-                                className="text-sm text-blue-500"
-                            >
-                                {showPassword ? 'Hide' : 'Show'} Passwords
+                        <div className="flex items-center justify-between">
+                            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                                Register
                             </button>
                         </div>
-                        <button type="submit" className="w-full bg-blue-500 text-white py-2 rounded-md hover:bg-blue-600">
-                            Login
-                        </button>
                     </form>
+                    <p className="text-center text-gray-500 text-xs">
+                        Already have an account? <a href="/login" className="text-blue-500 hover:text-blue-800">Login</a>
+                    </p>
                 </div>
-                <h4>Already have an account? <a href="/login" className="text-blue-500">Login</a></h4>
             </div>
         </main>
     );

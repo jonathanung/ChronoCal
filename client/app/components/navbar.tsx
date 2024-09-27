@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { 
     HomeIcon, CalendarIcon, CalendarRangeIcon, SettingsIcon, 
@@ -10,6 +11,8 @@ export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
 
     // Function to determine if a link is active
     const isActive = (route: string) => pathname === route;
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     // Function to prevent default click action if the link is active
     const handleClick = (e: React.MouseEvent<HTMLAnchorElement, MouseEvent>, route: string) => {
@@ -17,6 +20,19 @@ export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
             e.preventDefault();  // Disable navigation if the link is active
         }
     };
+
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+                setDropdownOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
 
     return (
         <div className="flex w-full h-full flex-col">
@@ -101,8 +117,11 @@ export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
                     </nav>
                 ) : (<nav className="flex-1 ml-10"></nav>)}
                 {isLoggedIn ? (
-                    <div className="flex items-center gap-4 md:ml-4">
-                        <button className="rounded-full w-8 h-8">
+                    <div className="flex items-center gap-4 md:ml-4 relative" ref={dropdownRef}>
+                        <button 
+                            className="rounded-full w-8 h-8"
+                            onClick={() => setDropdownOpen(!dropdownOpen)}
+                        >
                             <img
                                 alt="Avatar"
                                 className="rounded-full"
@@ -116,6 +135,24 @@ export default function Navbar({ isLoggedIn }: { isLoggedIn: boolean }) {
                             />
                             <span className="sr-only">Toggle user menu</span>
                         </button>
+                        {dropdownOpen && (
+                            <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-md overflow-hidden shadow-xl z-10">
+                                <Link 
+                                    href="/settings"
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    onClick={() => setDropdownOpen(false)}
+                                >
+                                    Settings
+                                </Link>
+                                <Link 
+                                    href="/logout"
+                                    className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                                    onClick={() => setDropdownOpen(false)}
+                                >
+                                    Logout
+                                </Link>
+                            </div>
+                        )}
                     </div>
                 ) : (
                     <div className="flex items-center gap-4 md:ml-4">
