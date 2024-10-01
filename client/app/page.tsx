@@ -11,8 +11,17 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 export default function Home() {
     const router = useRouter();
-    const [currentTime, setCurrentTime] = useState(new Date());
+    const [currentTime, setCurrentTime] = useState<Date | null>(null);
     const featuresRef = useRef<HTMLElement>(null);
+
+    useEffect(() => {
+        setCurrentTime(new Date());
+        const timer = setInterval(() => {
+            setCurrentTime(new Date());
+        }, 1000);
+
+        return () => clearInterval(timer);
+    }, []);
 
     useEffect(() => {
         axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/current`, {withCredentials: true})
@@ -21,12 +30,6 @@ export default function Home() {
                     router.push('/dashboard');
                 }
             }).catch((err) => { });
-
-        const timer = setInterval(() => {
-            setCurrentTime(new Date());
-        }, 1000);
-
-        return () => clearInterval(timer);
     }, []);
 
     const getRotation = (value: number, max: number) => {
@@ -34,7 +37,7 @@ export default function Home() {
     };
 
     const formatTime = (date: Date) => {
-        return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        return date?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     };
 
     const scrollToFeatures = () => {
@@ -59,10 +62,11 @@ export default function Home() {
                     <div className="absolute inset-0 rounded-full border-4 border-indigo-500"></div>
                     {/* <div className="absolute inset-2 rounded-full border-2 border-purple-500"></div> */}
                     <div className="absolute inset-4 flex items-center justify-center rounded-full bg-white/30 backdrop-blur-sm">
+                    {currentTime && (
                         <div className="relative w-48 h-48">
                             {/* Clock face */}
                             <div className="absolute inset-0 rounded-full border-2 border-pink-500"></div>
-                            {/* Hour hand */}
+                                          {/* Hour hand */}
                             <div 
                                 className="absolute top-1/2 left-1/2 w-1 h-16 bg-pink-500 origin-bottom transform -translate-x-1/2"
                                 style={{
@@ -86,6 +90,7 @@ export default function Home() {
                             {/* Center dot */}
                             <div className="absolute top-1/2 left-1/2 w-2 h-2 bg-pink-500 rounded-full transform -translate-x-1/2 -translate-y-1/2"></div>
                         </div>
+                    )}
                     </div>
                 </div>
                 <p className="text-lg font-semibold text-gray-600">It is currently {formatTime(currentTime)}</p>
