@@ -3,6 +3,9 @@ const jwt = require("jsonwebtoken")
 const bcrypt = require("bcrypt")
 const key = process.env.A_SECRET_KEY
 const TimezoneEnum = require('timezone-enum');
+console.log('TimezoneEnum:', TimezoneEnum);
+const fs = require('fs');
+const path = require('path');
 
 const Calendar = require('../models/calendar-model');
 const ExpenseType = require('../models/expense-type-model');
@@ -20,17 +23,22 @@ class UserController {
         }
 
         try {
+            console.log('Creating user with body:', req.body);
             const user = await User.create(req.body);
+            console.log('User created:', user);
 
-            // Create a new "Personal" calendar for the user
+            const defaultTimezone = 'America/Los_Angeles';
+            console.log('Creating personal calendar with timezone:', defaultTimezone);
             const personalCalendar = new Calendar({
                 owner_id: user._id,
                 name: "Personal",
                 color: "#FFD700",
-                timezone: TimezoneEnum['US/Pacific'], // Ensure this is a valid timezone from TimezoneEnum
+                timezone: defaultTimezone,
                 description: "Personal calendar"
             });
+            console.log('Personal calendar before save:', personalCalendar);
             await personalCalendar.save();
+            console.log('Personal calendar after save:', personalCalendar);
 
             // Create a new "Personal" expense type for the user
             const personalExpenseType = new ExpenseType({
@@ -43,8 +51,8 @@ class UserController {
             res.cookie("usertoken", userToken, key, { httpOnly: true })
                 .json({ user: user });
         } catch (error) {
+            console.error('Error in register:', error);
             res.status(400).json({ errors: error.errors, message: error.message });
-            console.log(error);
         }
     }
 
@@ -55,7 +63,7 @@ class UserController {
         const user = await User.findOne({email: req.body.email.toLowerCase()});
         if (!user) {
             console.log("User not found")
-            return res.sendStatus(400);
+            return res.sendStatus(404);
         }
 
         const correctPassword = await bcrypt.compare(req.body.password, user.password);
@@ -102,6 +110,20 @@ class UserController {
         User.find()
             .then(users => res.json(users))
             .catch(error => res.json(error))
+    }
+
+    // Add this new method
+    getUserFromToken = async (req) => {
+        const token = req.cookies.usertoken;
+        if (!token) {
+            throw new Error('No token provided');
+        }
+        const decoded = jwt.verify(token, key);
+        const user = await User.findById(decoded.id);
+        if (!user) {
+            throw new Error('User not found');
+        }
+        return user;
     }
 
     getDeselectedCalendars = async (req, res) => {
@@ -156,7 +178,44 @@ class UserController {
         }
     }
 
+    updateUser = async (req, res) => {
+        try {
+            const user = await this.getUserFromToken(req);
+            const { firstName, lastName } = req.body;
+            user.firstName = firstName;
+            user.lastName = lastName;
+            await user.save();
+            res.status(200).json({ message: "User updated successfully." });
+        } catch (error) {
+            console.error("Error in updateUser:", error);
+            res.status(500).json({ message: "Internal server error." });
+        }
+    }
 
+    updateProfilePicture = async (req, res) => {
+        try {
+            const user = await this.getUserFromToken(req);
+            if (req.file) {
+                // If user already has a profile picture, delete the old one
+                if (user.profilePicture && user.profilePicture !== '/default-profile-picture.png') {
+                    const oldPicturePath = path.join(__dirname, '..', 'uploads', path.basename(user.profilePicture));
+                    if (fs.existsSync(oldPicturePath)) {
+                        fs.unlinkSync(oldPicturePath);
+                    }
+                }
+
+                // Update user's profile picture with new file path
+                user.profilePicture = `/uploads/${req.file.filename}`;
+                await user.save();
+                res.status(200).json({ message: "Profile picture updated successfully.", profilePicture: user.profilePicture });
+            } else {
+                res.status(400).json({ message: "No file uploaded." });
+            }
+        } catch (error) {
+            console.error("Error in updateProfilePicture:", error);
+            res.status(500).json({ message: "Internal server error." });
+        }
+    }
 }
 
 module.exports = new UserController();

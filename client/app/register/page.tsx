@@ -66,6 +66,9 @@ export default function Login() {
                     })
                 }); 
                 console.log(await response.json());
+                if (response.status === 200) {
+                    router.push('/dashboard');
+                }
             } catch (error) {
                 console.error('Invalid', error);
             }

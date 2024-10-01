@@ -7,6 +7,10 @@ import axios from 'axios';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { PieChart, Pie, Cell, ResponsiveContainer, ComposedChart, Bar, Line, XAxis, YAxis, Tooltip, Legend } from 'recharts'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 
 // Extended mock data spanning across two months
 const mockExpenses = [
@@ -45,17 +49,30 @@ export default function Expenses() {
     unitLabel: 'day',
     categoryStats: {}
   })
-    const router = useRouter();
-    useEffect(() => {
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/current`, { withCredentials: true })
-            .then((response) => { 
-                if (response.status !== 200) {
-                    router.push('/');
-                }
-            }).catch((err) => { 
-                router.push('/');
-            });
-    }, []);
+  const [newExpense, setNewExpense] = useState({ amount: '', category: '', date: '', description: '', expense_type: '' })
+  const [expenseTypes, setExpenseTypes] = useState([])
+  const [user, setUser] = useState(null)
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchUserAndExpenseTypes = async () => {
+      try {
+        const userResponse = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/current`, { withCredentials: true });
+        if (userResponse.status === 200) {
+          setUser(userResponse.data);
+          console.log(userResponse.data);
+          setExpenseTypes(userResponse.data.expense_types);
+        } else {
+          router.push('/');
+        }
+      } catch (err) {
+        console.error('Error fetching user or expense types:', err);
+        router.push('/');
+      }
+    };
+
+    fetchUserAndExpenseTypes();
+  }, []);
 
   useEffect(() => {
     // Filter expenses based on timeframe
@@ -147,22 +164,110 @@ export default function Expenses() {
 
   }, [timeframe])
 
+  const handleNewExpenseChange = (e) => {
+    setNewExpense({ ...newExpense, [e.target.name]: e.target.value })
+  }
+
+  const handleNewExpenseSubmit = async (e) => {
+    e.preventDefault()
+    try {
+      const response = await axios.post('http://localhost:8000/api/expenses', newExpense, { withCredentials: true })
+      console.log('New expense created:', response.data)
+      // Refresh expenses (you'll need to implement this function)
+      // refreshExpenses()
+      setNewExpense({ amount: '', category: '', date: '', description: '', expense_type: '' })
+    } catch (error) {
+      console.error('Error creating expense:', error)
+    }
+  }
+
     return (
     <main className="">
         <Navbar isLoggedIn={true} />
         <div className="container mx-auto p-4">
-            <h1 className="text-3xl font-bold mb-4">Expense Tracker</h1>
-            <Select onValueChange={setTimeframe} defaultValue={timeframe}>
-                <SelectTrigger className="w-[180px] mb-4">
-                <SelectValue placeholder="Select timeframe" />
-                </SelectTrigger>
-                <SelectContent>
-                <SelectItem value="day">Day</SelectItem>
-                <SelectItem value="week">Week</SelectItem>
-                <SelectItem value="month">Month</SelectItem>
-                <SelectItem value="year">Year</SelectItem>
-                </SelectContent>
-            </Select>
+            <div className="flex justify-between items-center mb-4">
+                <h1 className="text-3xl font-bold">Expense Tracker</h1>
+                <div className="flex items-center space-x-4">
+                    <Select onValueChange={setTimeframe} defaultValue={timeframe}>
+                        <SelectTrigger className="w-[180px] mb-4">
+                        <SelectValue placeholder="Select timeframe" />
+                        </SelectTrigger>
+                        <SelectContent>
+                        <SelectItem value="day">Day</SelectItem>
+                        <SelectItem value="week">Week</SelectItem>
+                        <SelectItem value="month">Month</SelectItem>
+                        <SelectItem value="year">Year</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button>Add Expense</Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                            <DialogHeader>
+                                <DialogTitle>Add New Expense</DialogTitle>
+                            </DialogHeader>
+                            <form onSubmit={handleNewExpenseSubmit} className="space-y-4">
+                                <div>
+                                    <Label htmlFor="amount">Amount</Label>
+                                    <Input
+                                    id="amount"
+                                    name="amount"
+                                    type="number"
+                                    value={newExpense.amount}
+                                    onChange={handleNewExpenseChange}
+                                    required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="category">Category</Label>
+                                    <Input
+                                    id="category"
+                                    name="category"
+                                    value={newExpense.category}
+                                    onChange={handleNewExpenseChange}
+                                    required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="date">Date</Label>
+                                    <Input
+                                    id="date"
+                                    name="date"
+                                    type="date"
+                                    value={newExpense.date}
+                                    onChange={handleNewExpenseChange}
+                                    required
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="description">Description</Label>
+                                    <Input
+                                    id="description"
+                                    name="description"
+                                    value={newExpense.description}
+                                    onChange={handleNewExpenseChange}
+                                    />
+                                </div>
+                                <div>
+                                    <Label htmlFor="expense_type">Expense Type</Label>
+                                    <Select name="expense_type" value={newExpense.expense_type} onValueChange={(value) => handleNewExpenseChange({ target: { name: 'expense_type', value } })}>
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select an expense type" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {expenseTypes.map((type) => (
+                                        <SelectItem key={type._id} value={type._id}>{type.name}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                    </Select>
+                                </div>
+                                <Button type="submit">Add Expense</Button>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
+                </div>
+            </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <Card>
                 <CardHeader>

@@ -2,20 +2,19 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import axios from 'axios'; 
-import bcrypt from 'bcryptjs';
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
 
 export default function Login() {
-    interface LoginUser {
-        email: string;
-        password: string;
-    }
-    const [user, setUser] = useState<LoginUser>({ email: '', password: '' });
-    const [showPassword, setShowPassword] = useState<boolean>(false);
-    const [error, setError] = useState<string>('');
+    const [user, setUser] = useState({ email: '', password: '' });
+    const [showPassword, setShowPassword] = useState(false);
+    const [error, setError] = useState('');
+    const router = useRouter();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value } = e.target;
-        setUser(user => { return { ...user, [name]: value } })
+        setUser(prev => ({ ...prev, [name]: value }));
     };
 
     const togglePasswordVisibility = () => {
@@ -24,37 +23,55 @@ export default function Login() {
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        setError(''); // Clear any existing errors
         try {
-            const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/login`, {
-                method: "post",
-                mode: "cors",
-                headers: { "Content-Type": "application/json" }, 
-                credentials: "include",
-                body: JSON.stringify({
-                    "email": user.email,
-                    "password": user.password
-                })
-            }); 
-            const data = await response.json();
+            const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}/api/user/login`, user, {
+                withCredentials: true
+            });
             if (response.status === 200) {
                 router.push('/dashboard');
-            } else {
-                setError(data.message || 'An error occurred during login');
             }
         } catch (error) {
-            console.error('Invalid', error);
-            setError('An unexpected error occurred. Please try again.');
+            if (axios.isAxiosError(error)) {
+                if (error.response) {
+                    // The request was made and the server responded with a status code
+                    // that falls out of the range of 2xx
+                    if (error.response.status === 400) {
+                        setError('Invalid email or password. Please try again.');
+                    } else if (error.response.status === 404) {
+                        setError('User not found. Please check your email or sign up.');
+                    } else {
+                        setError(`Login failed: ${error.response.data.message || 'Unknown error occurred'}`);
+                    }
+                } else if (error.request) {
+                    // The request was made but no response was received
+                    setError('No response received from server. Please try again later.');
+                } else {
+                    // Something happened in setting up the request that triggered an Error
+                    setError('An error occurred while logging in. Please try again.');
+                }
+            } else {
+                setError('An unexpected error occurred. Please try again.');
+            }
+            console.error('Login error:', error);
         }
     };
-    const router = useRouter();
+
     useEffect(() => {
-        axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/current`,{withCredentials: true})
-            .then((response) => { 
+        const checkCurrentUser = async () => {
+            try {
+                const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/user/current`, { withCredentials: true });
                 if (response.status === 200) {
                     router.push('/dashboard');
                 }
-            }).catch((err) => { });
-    }, []); 
+            } catch (error) {
+                // If there's an error, it means the user is not logged in, so we do nothing
+                console.error('Error checking current user:', error);
+            }
+        };
+
+        checkCurrentUser();
+    }, []);
 
     return (
         <main className="bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-800 dark:to-gray-900">
@@ -69,32 +86,28 @@ export default function Login() {
                             </div>
                         )}
                         <div className="mb-4">
-                            <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="email">
-                                Email
-                            </label>
-                            <input
-                                className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+                            <Label htmlFor="email">Email</Label>
+                            <Input
                                 type="email"
                                 id="email"
                                 name="email"
                                 value={user.email}
                                 onChange={handleChange}
                                 placeholder="Enter your email"
+                                required
                             />
                         </div>
                         <div className="mb-6">
-                            <label className="block text-gray-700 dark:text-gray-300 text-sm font-bold mb-2" htmlFor="password">
-                                Password
-                            </label>
+                            <Label htmlFor="password">Password</Label>
                             <div className="relative">
-                                <input
-                                    className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 mb-3 leading-tight focus:outline-none focus:shadow-outline"
+                                <Input
                                     type={showPassword ? 'text' : 'password'}
                                     id="password"
                                     name="password"
                                     value={user.password}
                                     onChange={handleChange}
                                     placeholder="Enter your password"
+                                    required
                                 />
                                 <button
                                     type="button"
@@ -106,9 +119,9 @@ export default function Login() {
                             </div>
                         </div>
                         <div className="flex items-center justify-between">
-                            <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline" type="submit">
+                            <Button type="submit">
                                 Sign In
-                            </button>
+                            </Button>
                             <a className="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" href="#">
                                 Forgot Password?
                             </a>

@@ -1,6 +1,7 @@
 const Calendar = require('../models/calendar-model');
 const User = require('../models/user-model');
 const jwt = require('jsonwebtoken');
+const TimezoneEnum = require('timezone-enum');
 
 class CalendarController {
 

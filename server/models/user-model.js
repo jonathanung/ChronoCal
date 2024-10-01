@@ -6,12 +6,12 @@ const UserSchema = new mongoose.Schema({
     firstName: {
         type: String,
         required: [true, "First Name is required!"],
-        minlength: [1, "Username must be at least 1 character long!"]
+        minlength: [1, "First name must be at least 1 character long!"]
     },
     lastName: {
         type: String,
         required: [true, "Last Name is required!"],
-        minlength: [1, "Username must be at least 1 character long!"]
+        minlength: [1, "Last name must be at least 1 character long!"]
     },
     email: {
         type: String,
@@ -20,11 +20,17 @@ const UserSchema = new mongoose.Schema({
             validator: val => /^([\w-\.]+@([\w-]+\.)+[\w-]+)?$/.test(val),
             message: "Please enter a valid email!"
         },
-        lowercase: true
+        lowercase: true,
+        unique: true
     },
     password: {
         type: String,
-        required: [true, "Password is required!"]
+        required: [true, "Password is required!"],
+        minlength: [8, "Password must be at least 8 characters long!"]
+    },
+    profilePicture: {
+        type: String,
+        // default: '/default-profile-picture.png' // You can set a default image path
     },
     calendars: {
         type: Map,

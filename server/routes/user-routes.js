@@ -11,6 +11,7 @@ router.get("/logout", UserController.logout);
 router.get("/deselected-calendars", authenticate, UserController.getDeselectedCalendars);
 router.post("/change-password", authenticate, UserController.changePassword);
 router.delete("/delete", authenticate, UserController.deleteUser);
-
+router.put("/update", authenticate, UserController.updateUser);
+router.post("/profile-picture", authenticate, UserController.updateProfilePicture);
 
 module.exports = router;
