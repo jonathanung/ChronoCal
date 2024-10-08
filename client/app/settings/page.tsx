@@ -9,14 +9,14 @@ import { Label } from "@/components/ui/label"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 
 export default function Settings() {
-  const [user, setUser] = useState(null);
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
-  const [oldPassword, setOldPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmNewPassword, setConfirmNewPassword] = useState('');
-  const [profilePicture, setProfilePicture] = useState(null);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [user, setUser] = useState<any | null>(null);
+  const [firstName, setFirstName] = useState<string>('');
+  const [lastName, setLastName] = useState<string>('');
+  const [oldPassword, setOldPassword] = useState<string>('');
+  const [newPassword, setNewPassword] = useState<string>('');
+  const [confirmNewPassword, setConfirmNewPassword] = useState<string>('');
+  const [profilePicture, setProfilePicture] = useState<File | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState<boolean>(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -35,7 +35,7 @@ export default function Settings() {
     }
   };
 
-  const handleNameChange = async (e) => {
+  const handleNameChange = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
       await axios.put(`${process.env.NEXT_PUBLIC_API_URL}/api/user/update`, { firstName, lastName }, { withCredentials: true });
@@ -46,7 +46,7 @@ export default function Settings() {
     }
   };
 
-  const handlePasswordChange = async (e) => {
+  const handlePasswordChange = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (newPassword !== confirmNewPassword) {
       alert('New passwords do not match');
@@ -64,8 +64,12 @@ export default function Settings() {
     }
   };
 
-  const handleProfilePictureChange = async (e) => {
-    const file = e.target.files[0];
+  const handleProfilePictureChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) {
+      alert('No file selected');
+      return;
+    }
     const formData = new FormData();
     formData.append('profilePicture', file);
     try {

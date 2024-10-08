@@ -1,9 +1,9 @@
 const User = require('../models/user-model');
 const jwt = require("jsonwebtoken")
-const bcrypt = require("bcrypt")
+const bcrypt = require("bcryptjs")
 const key = process.env.A_SECRET_KEY
 const TimezoneEnum = require('timezone-enum');
-console.log('TimezoneEnum:', TimezoneEnum);
+// console.log('TimezoneEnum:', TimezoneEnum);
 const fs = require('fs');
 const path = require('path');
 

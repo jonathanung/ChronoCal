@@ -9,6 +9,8 @@ import { Calendar, Clock, DollarSign, FileText, LineChart, Mic, Sun } from "luci
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
+import Prototype from './components/prototype';
+
 export default function Home() {
     const router = useRouter();
     const [currentTime, setCurrentTime] = useState<Date | null>(null);
@@ -36,7 +38,7 @@ export default function Home() {
         return (value / max) * 360;
     };
 
-    const formatTime = (date: Date) => {
+    const formatTime = (date: Date | null) => {
         return date?.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
     };
 
@@ -190,7 +192,7 @@ export default function Home() {
         </main>
         <footer className="w-full py-6 border-t bg-white/50 backdrop-blur-sm">
             <div className="container px-4 md:px-6 mx-auto flex flex-col sm:flex-row justify-between items-center">
-            <p className="text-xs text-gray-600 dark:text-gray-400">© 2024 Chronocal. All rights reserved.</p>
+            <p className="text-xs text-gray-600 dark:text-gray-400">© 2024 Jonathan Ung. All rights reserved.</p>
             <nav className="flex gap-4 sm:gap-6 mt-4 sm:mt-0">
                 <Link className="text-xs hover:underline underline-offset-4 text-indigo-600" href="#">
                 Terms of Service
@@ -201,7 +203,8 @@ export default function Home() {
             </nav>
             </div>
         </footer>
-        </div>
+          </div>
+          <Prototype />
       </main>
     );
 }

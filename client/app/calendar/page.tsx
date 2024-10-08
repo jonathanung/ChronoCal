@@ -29,12 +29,12 @@ const mockEvents = [
 ]
 
 export default function Calendar() {
-  const [date, setDate] = useState(new Date(2024, 8, 1))
-  const [view, setView] = useState('week')
-  const [daysToShow, setDaysToShow] = useState(3)
-  const [scrollDirection, setScrollDirection] = useState(null)
-  const contentRef = useRef(null)
-  const [isMobile, setIsMobile] = useState(false)
+  const [date, setDate] = useState<Date>(new Date())
+  const [view, setView] = useState<string>('week')
+  const [daysToShow, setDaysToShow] = useState<number>(3)
+  const [scrollDirection, setScrollDirection] = useState<string | null>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+  const [isMobile, setIsMobile] = useState<boolean>(false)
 
   useEffect(() => {
     const checkMobile = () => {

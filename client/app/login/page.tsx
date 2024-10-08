@@ -7,9 +7,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 export default function Login() {
-    const [user, setUser] = useState({ email: '', password: '' });
-    const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState('');
+    const [user, setUser] = useState<{ email: string; password: string }>({ email: '', password: '' });
+    const [showPassword, setShowPassword] = useState<boolean>(false);
+    const [error, setError] = useState<string>('');
     const router = useRouter();
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -128,7 +128,7 @@ export default function Login() {
                         </div>
                     </form>
                     <p className="text-center text-gray-500 text-xs">
-                        Don't have an account? <a href="/register" className="text-blue-500 hover:text-blue-800">Register</a>
+                        Don&apos;t have an account? <a href="/register" className="text-blue-500 hover:text-blue-800">Register</a>
                     </p>
                 </div>
             </div>

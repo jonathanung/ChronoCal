@@ -39,18 +39,27 @@ const mockExpenses = [
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
 const STROKE_COLORS = ['#005299', '#00835A', '#A67700', '#A6522B', '#5956A6']
 
+interface ExpenseType {
+  _id: string;
+  name: string;
+}
+
 export default function Expenses() {
-  const [timeframe, setTimeframe] = useState('month')
-  const [filteredExpenses, setFilteredExpenses] = useState(mockExpenses)
-  const [pieData, setPieData] = useState([])
-  const [histogramData, setHistogramData] = useState([])
-  const [statistics, setStatistics] = useState({
+  const [timeframe, setTimeframe] = useState<string>('month')
+  const [filteredExpenses, setFilteredExpenses] = useState<any[]>(mockExpenses)
+  const [pieData, setPieData] = useState<any[]>([])
+  const [histogramData, setHistogramData] = useState<any[]>([])
+  const [statistics, setStatistics] = useState<{
+    avgSpendingPerUnit: number,
+    unitLabel: string,
+    categoryStats: Record<string, any>
+  }>({
     avgSpendingPerUnit: 0,
     unitLabel: 'day',
     categoryStats: {}
   })
   const [newExpense, setNewExpense] = useState({ amount: '', category: '', date: '', description: '', expense_type: '' })
-  const [expenseTypes, setExpenseTypes] = useState([])
+  const [expenseTypes, setExpenseTypes] = useState<ExpenseType[]>([])
   const [user, setUser] = useState(null)
   const router = useRouter();
 
@@ -97,7 +106,7 @@ export default function Expenses() {
     setFilteredExpenses(filtered)
 
     // Group data for pie chart
-    const groupedData = filtered.reduce((acc, expense) => {
+    const groupedData = filtered.reduce<Record<string, number>>((acc, expense) => {
       if (!acc[expense.category]) {
         acc[expense.category] = 0
       }
@@ -108,7 +117,7 @@ export default function Expenses() {
     setPieData(Object.entries(groupedData).map(([name, value]) => ({ name, value: Number(value) })))
 
     // Prepare data for histogram
-    const histogramDataTemp = filtered.reduce((acc, expense) => {
+    const histogramDataTemp = filtered.reduce<Record<string, { date: string, total: number }>>((acc, expense) => {
       const key = expense.date
       if (!acc[key]) {
         acc[key] = { date: key, total: 0 }
@@ -117,7 +126,9 @@ export default function Expenses() {
       return acc
     }, {})
 
-    const sortedHistogramData = Object.values(histogramDataTemp).sort((a, b) => new Date(a.date) - new Date(b.date))
+    const sortedHistogramData = Object.values(histogramDataTemp).sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    )
     setHistogramData(sortedHistogramData)
 
     // Calculate statistics
@@ -146,7 +157,7 @@ export default function Expenses() {
     }
 
     const categories = Array.from(new Set(filtered.map(e => e.category)))
-    const categoryStats = categories.reduce((acc, category) => {
+    const categoryStats = categories.reduce<Record<string, { total: number, avgPerUnit: number, comparison: number }>>((acc, category) => {
       const categoryTotal = filtered.filter(e => e.category === category).reduce((sum, e) => sum + e.amount, 0)
       acc[category] = {
         total: categoryTotal,
@@ -164,11 +175,11 @@ export default function Expenses() {
 
   }, [timeframe])
 
-  const handleNewExpenseChange = (e) => {
+  const handleNewExpenseChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setNewExpense({ ...newExpense, [e.target.name]: e.target.value })
   }
 
-  const handleNewExpenseSubmit = async (e) => {
+  const handleNewExpenseSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     try {
       const response = await axios.post('http://localhost:8000/api/expenses', newExpense, { withCredentials: true })
@@ -180,6 +191,10 @@ export default function Expenses() {
       console.error('Error creating expense:', error)
     }
   }
+
+  const handleExpenseTypeChange = (value: string) => {
+    setNewExpense({ ...newExpense, expense_type: value });
+  };
 
     return (
     <main className="">
@@ -251,12 +266,16 @@ export default function Expenses() {
                                 </div>
                                 <div>
                                     <Label htmlFor="expense_type">Expense Type</Label>
-                                    <Select name="expense_type" value={newExpense.expense_type} onValueChange={(value) => handleNewExpenseChange({ target: { name: 'expense_type', value } })}>
+                                    <Select 
+                                      name="expense_type" 
+                                      value={newExpense.expense_type} 
+                                      onValueChange={handleExpenseTypeChange}
+                                    >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select an expense type" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {expenseTypes.map((type) => (
+                                        {expenseTypes.map((type: ExpenseType) => (
                                         <SelectItem key={type._id} value={type._id}>{type.name}</SelectItem>
                                         ))}
                                     </SelectContent>
